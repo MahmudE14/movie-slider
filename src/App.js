@@ -1,25 +1,54 @@
-import logo from './logo.svg';
-import './App.css';
+import axios from "axios";
+import { useEffect, useState } from "react";
+import "./App.css";
+import Slider from "./components/slider";
+import { MOVIE_API } from "./config";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [movies, setMovies] = useState([]);
+    const [isLoading, setIsLoading] = useState(!movies.length);
+    const [page, setPage] = useState(1);
+
+    /*
+      [ ] Fetch next page
+      [ ] Fix control keys
+    */
+
+    const handleEndReached = () => {
+        setIsLoading(true);
+        if (page < 20) {
+            setPage(page + 1);
+        }
+    };
+
+    useEffect(() => {
+        const loadMovies = () => {
+            axios.get(MOVIE_API + page).then(({ data }) => {
+                setMovies([...movies, ...data.results]);
+                setIsLoading(false);
+            });
+        };
+
+        if (!movies.length) {
+            loadMovies();
+        } else {
+            if (isLoading) {
+                loadMovies();
+            }
+        }
+    }, [page]);
+
+    return (
+        <Slider
+            title={"POPULAR MOVIES"}
+            more_items_text={"See All"}
+            more_items_url={"#see-all"}
+            movies={movies}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            handleEndReached={handleEndReached}
+        />
+    );
 }
 
 export default App;
